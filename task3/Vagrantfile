@@ -1,0 +1,32 @@
+
+
+Vagrant.configure("2") do |config|
+
+  puts "Enter the number of VMs (1-253): "
+  node_count = Integer(STDIN.gets)
+
+  unless (1..253).include?(node_count)
+    puts "Invalid number of VMs. Please enter a number between 1 and 253."
+    exit
+  end
+
+  (1..node_count).each do |i|
+    config.vm.define "vm#{i}" do |subcfg|
+      subcfg.vm.hostname = "vm#{i}"
+      subcfg.vm.box = "hashicorp/bionic64"
+      subcfg.vm.box_version = "1.0.282"
+      subcfg.vm.network :private_network, ip: "192.168.60.#{i+10}"
+      subcfg.ssh.username = 'vagrant'
+      subcfg.ssh.password = 'vagrant'
+      subcfg.ssh.insert_key = false
+      subcfg.vm.provision "shell", inline: <<-SHELL
+        sudo apt-get update
+        sudo apt-get install -y git
+        git config --global user.name "szanko02"
+        git config --global user.email "stas.060232@gmail.com"
+        git clone -b Module-2 https://github.com/szanko02/vagrant
+        cat vagrant/README.md
+      SHELL
+    end  
+  end
+end
